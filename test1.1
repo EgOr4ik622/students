@@ -1,0 +1,83 @@
+import json
+import psycopg2
+
+type_file = input('Выберите формат файла(json или xml): ')
+name_db = input('Введите название БД: ')
+name_tb = input('Введите название таблицы: ')
+
+# Создание базы данных
+conn = psycopg2.connect(dbname="postgres", user="postgres", password="egor4ic", host="127.0.0.1")
+cursor = conn.cursor()
+conn.autocommit = True
+sql = f"CREATE DATABASE {name_db}"
+cursor.execute(sql)
+print(f"База данных {name_db} успешно создана")
+cursor.close()
+conn.close()
+
+# Создание таблицы
+conn = psycopg2.connect(dbname=name_db, user="postgres", password="egor4ic", host="127.0.0.1")
+cursor = conn.cursor()
+cursor.execute(f"CREATE TABLE {name_tb} (birthday DATE, id SERIAL PRIMARY KEY, name VARCHAR(70), room INTEGER, sex VARCHAR(50))")
+conn.commit()
+print(f"Таблица {name_tb} успешно создана")
+cursor.close()
+conn.close()
+
+# Импорт данных из JSON
+with open('students.json', 'r', encoding='utf-8') as file:
+    data = json.load(file)
+
+for i in data:
+    print(i)
+
+    conn = psycopg2.connect(dbname=name_db, user="postgres", password="egor4ic", host="127.0.0.1")
+    cursor = conn.cursor()
+
+    query = f"""
+        INSERT INTO {name_tb} (birthday, id, name, room, sex) 
+        VALUES (%s, %s, %s, %s, %s)
+    """
+    values = (i['birthday'], i['id'], i['name'], i['room'], i['sex'])
+
+    cursor.execute(query, values)
+    conn.commit()
+    print("Данные добавлены")
+
+    cursor.close()
+    conn.close()
+
+conn = psycopg2.connect(
+        dbname=name_db,
+        user="postgres",
+        password="egor4ic",
+        host="127.0.0.1"
+    )
+cursor = conn.cursor()
+
+# Параметризованный запрос с 5 минимальными средними возрастами
+query = f"""
+        SELECT
+            room,
+            ROUND(AVG(EXTRACT(YEAR FROM AGE(birthday)))::numeric, 2) AS average_age
+        FROM
+            {name_tb}
+        GROUP BY
+            room
+        ORDER BY
+            average_age  -- Сортируем по среднему возрасту (от меньшего к большему)
+        LIMIT 5
+        """
+
+cursor.execute(query)
+avg_min = cursor.fetchall()
+
+with open('avg_min.txt', 'w', encoding='utf-8') as f:
+    # Записываем заголовки
+    f.write("Room ID | Average Age\n")
+    f.write("--------|------------\n")
+
+# Записываем данные
+for row in avg_min:
+    f.write(f"{row[0]:<7} | {row[1]:.2f}\n")
+print("Результаты успешно сохранены в avg_min.txt")
