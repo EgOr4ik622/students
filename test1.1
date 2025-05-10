@@ -9,49 +9,6 @@ choice = input("Введите номер выбора (1 или 2): ")
 name_db = input('Введите название БД: ')
 name_tb = input('Введите название таблицы: ')
 
-# Создание базы данных
-conn = psycopg2.connect(dbname="postgres", user="postgres", password="egor4ic", host="127.0.0.1")
-cursor = conn.cursor()
-conn.autocommit = True
-sql = f"CREATE DATABASE {name_db}"
-cursor.execute(sql)
-print(f"База данных {name_db} успешно создана")
-cursor.close()
-conn.close()
-
-# Создание таблицы
-conn = psycopg2.connect(dbname=name_db, user="postgres", password="egor4ic", host="127.0.0.1")
-cursor = conn.cursor()
-cursor.execute(f"CREATE TABLE {name_tb} (birthday DATE, id SERIAL PRIMARY KEY, name VARCHAR(70), room INTEGER, sex VARCHAR(50))")
-conn.commit()
-print(f"Таблица {name_tb} успешно создана")
-cursor.close()
-conn.close()
-
-# Импорт данных из JSON
-with open('students.json', 'r', encoding='utf-8') as file:
-    data = json.load(file)
-
-for i in data:
-    print(i)
-
-    conn = psycopg2.connect(dbname=name_db, user="postgres", password="egor4ic", host="127.0.0.1")
-    cursor = conn.cursor()
-
-    query = f"""
-        INSERT INTO {name_tb} (birthday, id, name, room, sex) 
-        VALUES (%s, %s, %s, %s, %s)
-    """
-    values = (i['birthday'], i['id'], i['name'], i['room'], i['sex'])
-
-    cursor.execute(query, values)
-    conn.commit()
-    print("Данные добавлены")
-
-    cursor.close()
-    conn.close()
-
-
 # №2 Подключение к базе данных для вычисления 5 комнат с большой разницей в возрасте
 conn = psycopg2.connect(
     dbname=name_db,  # Убедитесь, что это правильное имя базы данных
@@ -100,7 +57,7 @@ if choice == '1':
         json.dump(result, f, indent=4, ensure_ascii=False)
 
     print("Результаты успешно сохранены в different_age.json")
-else:
+elif choice == '2':
     # 1. Создаем корневой элемент
     root = ET.Element("RoomsStatistics")
 
@@ -150,7 +107,7 @@ if choice == '1':
     with open('top_rooms_by_age.json', 'w', encoding='utf-8') as f:
         json.dump(data, f, indent=4, ensure_ascii=False)
     print("Данные сохранены в avg_min.json")
-else:
+elif choice == '2':
     # 1. Создаем корневой элемент
     root = ET.Element("RoomsStatistics")
 
@@ -204,7 +161,7 @@ if choice == '1':
     with open('different_sex.json', 'w', encoding='utf-8') as f:
         json.dump(room_numbers, f, indent=4)  # Просто список номеров комнат
     print("Результаты успешно сохранены в different_sex.json")
-else:
+elif choice == '2':
     # 1. Создаем корневой элемент
     root = ET.Element("RoomsStatistics")
 
@@ -260,7 +217,7 @@ if choice == "1":
     with open('room_students.json', 'w', encoding='utf-8') as f:
         json.dump(data_dict, f, indent=4, ensure_ascii=False)
     print("Результаты успешно сохранены в room_students.json")
-else:
+elif choice == '2':
     # 1. Создаем корневой элемент
     root = ET.Element("RoomsStatistics")
 
