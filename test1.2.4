@@ -1,0 +1,52 @@
+class RoomStatistics:
+    def __init__(self, db_manager, table_name):
+        self.db_manager = db_manager
+        self.table_name = table_name
+
+    def get_top_rooms_by_age_difference(self, limit=5):
+        query = f"""
+            WITH age_stats AS (
+                SELECT 
+                    room,
+                    MAX(EXTRACT(YEAR FROM AGE(birthday))) - MIN(EXTRACT(YEAR FROM AGE(birthday))) AS age_difference,
+                    MAX(EXTRACT(YEAR FROM AGE(birthday))) AS max_age,
+                    MIN(EXTRACT(YEAR FROM AGE(birthday))) AS min_age,
+                    COUNT(*) AS residents_count
+                FROM {self.table_name}
+                GROUP BY room
+                HAVING COUNT(*) > 1
+            )
+            SELECT room, age_difference, min_age, max_age, residents_count
+            FROM age_stats
+            ORDER BY age_difference DESC
+            LIMIT {limit};
+        """
+        return self.db_manager.execute_query(query, fetch=True) or []
+
+    def get_top_rooms_by_avg_age(self, limit=5):
+        query = f"""
+            SELECT room, ROUND(AVG(EXTRACT(YEAR FROM AGE(birthday)))::numeric, 2) AS average_age
+            FROM {self.table_name}
+            GROUP BY room
+            ORDER BY average_age DESC
+            LIMIT {limit}
+        """
+        return self.db_manager.execute_query(query, fetch=True) or []
+
+    def get_rooms_with_mixed_sex(self):
+        query = f"""
+            SELECT room
+            FROM {self.table_name}
+            GROUP BY room
+            HAVING COUNT(DISTINCT sex) > 1;
+        """
+        return self.db_manager.execute_query(query, fetch=True) or []
+
+    def get_rooms_with_student_count(self):
+        query = f"""
+            SELECT room, COUNT(id) AS residents_count
+            FROM {self.table_name}
+            GROUP BY room
+            ORDER BY room
+        """
+        return self.db_manager.execute_query(query, fetch=True) or []
