@@ -1,0 +1,16 @@
+class DataImporter:
+    def __init__(self, db_manager):
+        self.db_manager = db_manager
+
+    def import_from_json(self, file_path, table_name):
+        with open(file_path, 'r', encoding='utf-8') as file:
+            data = json.load(file)
+
+        for item in data:
+            query = f"""
+                INSERT INTO {table_name} (birthday, id, name, room, sex) 
+                VALUES (%s, %s, %s, %s, %s)
+            """
+            values = (item['birthday'], item['id'], item['name'], item['room'], item['sex'])
+            self.db_manager.execute_query(query, values, fetch=False)
+            print(f"Данные для {item['name']} добавлены")
