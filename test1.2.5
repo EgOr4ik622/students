@@ -31,73 +31,44 @@ def main():
 
     # Анализ данных
     stats = RoomStatistics(db_manager, name_tb, name_room_tb)
-    exporter = DataExporter()
 
-    # 1. Комнаты с наибольшей разницей в возрасте
     age_diff_data = stats.get_top_rooms_by_age_difference()
-    if choice == '1':
-        result = [{"name": row[0],
-        } for row in age_diff_data]
-        exporter.export_to_json(result, 'different_age.json')
-    elif choice == '2':
-        exporter.export_to_xml(
-            age_diff_data,
-            'different_age.xml',
-            "RoomsStatistics",
-            "Room",
-            ["room_name"]
-        )
-    else:
-        print("ВВЕДЕН НЕВЕРНЫЕ ФОРМАТ ДАННЫХ")
-
-    # 2. Комнаты с максимальным средним возрастом
     avg_age_data = stats.get_top_rooms_by_avg_age()
-    if choice == '1':
-        result = [{"room_name": room} for room in avg_age_data]
-        exporter.export_to_json(result, 'avg_min.json')
-    elif choice == '2':
-        exporter.export_to_xml(
-            avg_age_data,
-            'avg_min.xml',
-            "RoomsStatistics",
-            "Room",
-            ["room_name"]
-        )
-    else:
-        print("ВВЕДЕН НЕВЕРНЫЕ ФОРМАТ ДАННЫХ")
-
-    # 3. Комнаты с разнополыми жильцами
     mixed_sex_data = stats.get_rooms_with_mixed_sex()
-    if choice == '1':
-        result = [{"room_name": room[0]} for room in mixed_sex_data]
-        exporter.export_to_json(result, 'different_sex.json')
-    elif choice == '2':
-        exporter.export_to_xml(
-            mixed_sex_data,
-            'different_sex.xml',
-            "RoomsStatistics",
-            "Room",
-            ["room_name"]
-        )
-    else:
-        print("ВВЕДЕН НЕВЕРНЫЕ ФОРМАТ ДАННЫХ")
-
-    # 4. Комнаты с количеством жильцов
     room_students_data = stats.get_rooms_with_student_count()
-    if choice == '1':
-        result = [{"room_name": room, "residents_count": count} for room, count in room_students_data]
-        exporter.export_to_json(result, 'room_students.json')
-    elif choice == '2':
-        exporter.export_to_xml(
+    list_sql = (age_diff_data, avg_age_data, mixed_sex_data)
+    name_sql = ('age_diff_data', 'avg_age_data', 'mixed_sex_data')
+    # Экспортируем данные в выбранном формате
+    if choice == '1':  # JSON
+        for i, ii in zip(list_sql, name_sql):
+            DataExporter.export_to_json(
+                [{"room_name": row[0]} for row in i],
+                (f"{name_sql}.json")
+            )
+        DataExporter.export_to_json(
+            [{"room_name": row[0], "residents_count": row[1]} for row in room_students_data],
+            "room_students.json"
+        )
+    elif choice == '2':  # XML
+        for i, ii in zip(list_sql, name_sql):
+            DataExporter.export_to_xml(
+                i,
+                f"{ii}.xml",
+                "RoomsStatistics",
+                "Room",
+                ["room_name"]
+            )
+        DataExporter.export_to_xml(
             room_students_data,
-            'room_students.xml',
+            "room_students.xml",
             "RoomsStatistics",
             "Room",
             ["room_name", "residents_count"]
         )
     else:
-        print("ВВЕДЕН НЕВЕРНЫЕ ФОРМАТ ДАННЫХ")
+        print("ОШИБКА: Неверный формат данных")
 
+    print("Все данные успешно экспортированы")
 
 if __name__ == "__main__":
     main()
