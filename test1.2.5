@@ -11,11 +11,7 @@ def main():
     name_db = input('Введите название БД: ')
     name_tb = input('Введите название таблицы студентов: ')
     name_room_tb = input('Введите название таблицы комнат: ')
-    name_db_default = os.getenv('name_db_default')
-    user = os.getenv('user')
-    password = os.getenv('password')
-    host = os.getenv('host')
-
+    
     # Инициализация менеджера базы данных
     db_manager = DatabaseManager("postgres", "postgres", "egor4ic", "127.0.0.1")
 
