@@ -1,5 +1,4 @@
 def main():
-
     print("Укажите путь к файлу json c данными о students:")
     file_path_students = input()
     print("Укажите путь к файлу json c данными o rooms:")
@@ -11,7 +10,7 @@ def main():
     name_db = input('Введите название БД: ')
     name_tb = input('Введите название таблицы студентов: ')
     name_room_tb = input('Введите название таблицы комнат: ')
-    
+
     # Инициализация менеджера базы данных
     db_manager = DatabaseManager("postgres", "postgres", "egor4ic", "127.0.0.1")
 
